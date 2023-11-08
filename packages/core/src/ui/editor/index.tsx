@@ -28,6 +28,7 @@ export default function Editor({
   debounceDuration = 750,
   storageKey = "novel__content",
   disableLocalStorage = false,
+  handleUploadImage
 }: {
   /**
    * The API route to use for the OpenAI completion API.
@@ -81,6 +82,11 @@ export default function Editor({
    * Defaults to false.
    */
   disableLocalStorage?: boolean;
+  /**
+   * A callback function that is called whenever the user uploads an image.
+   * Defaults to undefined.
+   */
+  handleUploadImage?: (file: File) => Promise<string>;
 }) {
   const [content, setContent] = useLocalStorage(storageKey, defaultValue);
 
@@ -125,6 +131,11 @@ export default function Editor({
     },
     autofocus: "end",
   });
+
+  if (editor) {
+    const view = editor.view as any;
+    view.handleUploadImage = handleUploadImage
+  }
 
   const { complete, completion, isLoading, stop } = useCompletion({
     id: "novel",
