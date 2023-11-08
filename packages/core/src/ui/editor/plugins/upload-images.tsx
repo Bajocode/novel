@@ -3,6 +3,10 @@ import { toast } from "sonner";
 import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, EditorView } from "@tiptap/pm/view";
 
+interface EditorViewCustom extends EditorView {
+  handleUploadImage?: (file: File) => Promise<string>;
+}
+
 const uploadKey = new PluginKey("upload-image");
 
 const UploadImagesPlugin = () =>
@@ -55,7 +59,7 @@ function findPlaceholder(state: EditorState, id: {}) {
   return found.length ? found[0].from : null;
 }
 
-export function startImageUpload(file: File, view: EditorView, pos: number) {
+export function startImageUpload(file: File, view: EditorViewCustom, pos: number) {
   // check if the file is an image
   if (!file.type.includes("image/")) {
     toast.error("File type not supported.");
@@ -87,7 +91,9 @@ export function startImageUpload(file: File, view: EditorView, pos: number) {
     view.dispatch(tr);
   };
 
-  handleImageUpload(file).then((src) => {
+  const handleUpload = view.handleUploadImage ? view.handleUploadImage : handleImageUpload
+
+  handleUpload(file).then((src) => {
     const { schema } = view.state;
 
     let pos = findPlaceholder(view.state, id);
